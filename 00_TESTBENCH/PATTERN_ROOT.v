@@ -98,6 +98,7 @@ initial begin
     end
     golden_ans  = Binary2Real_10(in_data_1);
     delta       = AbsoluteDifference(user_ans,golden_ans);
+    $display("golden_ans: %f", golden_ans);
     if(in_mode==0)
       $display("%d/%d=%f",in_data_1,in_data_2,user_ans_tmp);
     else
