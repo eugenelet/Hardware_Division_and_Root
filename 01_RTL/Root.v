@@ -1,4 +1,4 @@
-module Division(
+module Root(
     clk,
     rst_n,
     in_valid,
