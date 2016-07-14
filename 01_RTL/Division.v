@@ -14,7 +14,7 @@ parameter	DIVIDE 		= 'd2;
 parameter	DUMP_OUTPUT = 'd3;
 
 
-parameter	BASE = 20'h20000;
+parameter	BASE = 20'h30000; //19th bit
 
 input				clk;
 input				rst_n;
@@ -32,13 +32,13 @@ reg			[1:0]	next_state;
  *	Take input
  *
  */
-reg			[20:0]	dividend;
+reg			[21:0]	dividend;
 always @(posedge clk) begin
 	if (!rst_n) begin
 		dividend <= 'd0;		
 	end
 	else if (current_state == STORE_INPUT) begin
-		dividend <= {in_data_1, {10'b0}};
+		dividend <= {in_data_1, {11'b0}};
 	end
 	else if (current_state == INIT_STATE) begin
 		dividend <= 'd0;
@@ -52,7 +52,7 @@ end
  */
 //reg			[22:0]	out_extend;
 reg			[20:0]	current_base;
-wire		[20:0]	guess_result = (out_data | current_base) * in_data_2;
+wire		[21:0]	guess_result = (out_data | current_base) * in_data_2;
 reg					terminate_flag;
 always @(posedge clk) begin
 	if (!rst_n) begin
