@@ -56,6 +56,9 @@ always @(posedge clk) begin
         out_valid <= out_valid_root;
         out_data <= out_root;
     end
+    else begin
+        out_valid <= 1'b0;
+    end
 end
 
 endmodule 
