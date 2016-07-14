@@ -50,14 +50,16 @@ end
  *	Compute Division
  *
  */
-reg			[22:0]	out_extend;
+reg			[22:0]	dividend_match;
 reg			[22:0]	current_base;
-wire		[22:0]	guess_result = out_extend | current_base;
+reg			[22:0]	out_extend;
+wire		[22:0]	guess_result = dividend_match | current_base;
 reg					terminate_flag;
 always @(posedge clk) begin
 	if (!rst_n) begin
-		out_extend <= 'd0;		
+		dividend_match <= 'd0;		
 		current_base <= BASE;
+		out_extend <= 'd0;
 		terminate_flag <= 1'b0;
 	end
 	else if (current_state==DIVIDE && current_base=='d0) begin // all iteration done
@@ -66,18 +68,20 @@ always @(posedge clk) begin
 	else if (current_state == DIVIDE) begin
 		current_base <= current_base >> 1'b1;
 		if(guess_result < dividend) begin //correct guess
-			out_extend <= guess_result;
+			dividend_match <= guess_result;
+			out_extend <= out_extend | current_base;
 		end
 		else if (guess_result == dividend) begin// exact match!
-			out_extend <= guess_result;
+			dividend_match <= guess_result;
+			out_extend <= out_extend | current_base;
 			terminate_flag <= 1'b1;
 		end
 		else begin // wrong guess, don't take result
-			out_extend <= out_extend;
+			//dividend_match <= dividend_match; dont have to do anything
 		end
 	end
 	else if (current_state == INIT_STATE) begin
-		out_extend <= 'd0;
+		dividend_match <= 'd0;
 		current_base <= BASE;
 		terminate_flag <= 1'b0;
 	end
