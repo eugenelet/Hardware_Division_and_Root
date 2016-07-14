@@ -91,9 +91,14 @@ end
 always @(posedge clk) begin
 	if (!rst_n) begin
 		out_data <= 'd0;	
+		out_valid <= 1'b0;
 	end
 	else if (current_state == DUMP_OUTPUT) begin
 		out_data <= out_extend[22:2];
+		out_valid <= 1'b1;
+	end
+	else if (current_state == INIT_STATE) begin
+		out_valid <= 1'b0;
 	end
 end
 
