@@ -131,7 +131,7 @@ always @(*) begin
 			end
 		end
 		DIVIDE: begin
-			if () begin
+			if (terminate_flag) begin
 				next_state = DUMP_OUTPUT;
 			end
 			else begin
@@ -139,7 +139,7 @@ always @(*) begin
 			end
 		end
 		DUMP_OUTPUT: begin
-			if () begin
+			if (out_data == out_extend[22:2]) begin
 				next_state = INIT_STATE;
 			end
 			else begin
