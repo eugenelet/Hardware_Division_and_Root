@@ -52,7 +52,7 @@ end
  */
 //reg			[22:0]	out_extend;
 reg			[20:0]	current_base;
-wire		[20:0]	guess_result = (out_extend | current_base) * in_data_2;
+wire		[20:0]	guess_result = (out_data | current_base) * in_data_2;
 reg					terminate_flag;
 always @(posedge clk) begin
 	if (!rst_n) begin
@@ -143,7 +143,7 @@ always @(*) begin
 			end
 		end
 		DUMP_OUTPUT: begin
-			if (out_data == out_extend[22:2]) begin
+			if (out_valid) begin
 				next_state = INIT_STATE;
 			end
 			else begin
