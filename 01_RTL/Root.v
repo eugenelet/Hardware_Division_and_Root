@@ -68,10 +68,10 @@ always @(posedge clk) begin
 	end
 	else if (current_state == COMPARE) begin
 		current_base <= current_base >> 1'b1;
-		if(guess_result < pow_result) begin //correct guess
+		if(guess_result < pow_result_shift) begin //correct guess
 			out_data <= out_data | current_base;
 		end
-		else if (guess_result == pow_result) begin// exact match!
+		else if (guess_result == pow_result_shift) begin// exact match!
 			out_data <= out_data | current_base;
 			terminate_flag <= 1'b1;
 		end
