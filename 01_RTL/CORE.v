@@ -17,10 +17,10 @@ input       [2:0]   in_data_2;
 output reg          out_valid;
 output reg  [19:0]  out_data;
 
-output      [19:0]  out_div;
-output      [19:0]  out_root;
-output              out_valid_div;
-output              out_valid_root;
+wire        [19:0]  out_div;
+wire        [19:0]  out_root;
+wire                out_valid_div;
+wire                out_valid_root;
 
 Division div(
     .clk         (clk),
