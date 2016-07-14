@@ -14,7 +14,7 @@ parameter	DIVIDE 		= 'd2;
 parameter	DUMP_OUTPUT = 'd3;
 
 
-parameter	BASE = 20'h40000; //19th bit
+parameter	BASE = 20'h80000; //19th bit
 
 input				clk;
 input				rst_n;
