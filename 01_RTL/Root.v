@@ -129,7 +129,7 @@ always @(*) begin
 		end
 		STORE_INPUT: begin
 			if(!in_valid) begin
-				next_state = ROOT;
+				next_state = COMPARE;
 			end
 			else begin
 				next_state = current_state;
