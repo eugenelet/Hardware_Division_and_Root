@@ -54,7 +54,8 @@ end
 //reg			[22:0]	out_extend;
 reg			[19:0]	current_base;
 wire		[59:0]	debug_guess = (out_data | current_base) ** in_data_2;
-wire		[59:0]	guess_result = ((out_data | current_base) ** in_data_2) << (5-in_data_2)*10;
+wire		[59:0]	guess_result = ((out_data | current_base) ** in_data_2);// << (5-in_data_2)*10;
+wire		[59:0]	pow_result_shift = pow_result >> (in_data_2-1)*10;
 reg					terminate_flag;
 always @(posedge clk) begin
 	if (!rst_n) begin
