@@ -33,15 +33,15 @@ Division div(
 );
 
 
-Root rt(
-    .clk         (clk),
-    .rst_n       (rst_n),
-    .in_valid    (in_valid),
-    .in_data_1   (in_data_1),
-    .in_data_2   (in_data_2),
-    .out_valid   (out_valid_root),
-    .out_data    (out_root)
-);
+//Root rt(
+//    .clk         (clk),
+//    .rst_n       (rst_n),
+//    .in_valid    (in_valid),
+//    .in_data_1   (in_data_1),
+//    .in_data_2   (in_data_2),
+//    .out_valid   (out_valid_root),
+//    .out_data    (out_root)
+//);
 
 always @(posedge clk) begin
     if (!rst_n) begin
