@@ -38,7 +38,7 @@ always @(posedge clk) begin
 		dividend <= 'd0;		
 	end
 	else if (current_state == STORE_INPUT) begin
-		dividend <= {in_data_1, {11'b0}};
+		dividend <= {1'b0, in_data_1, {10'b0}};
 	end
 	else if (current_state == INIT_STATE) begin
 		dividend <= 'd0;
