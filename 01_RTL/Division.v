@@ -14,7 +14,7 @@ parameter	DIVIDE 		= 'd2;
 parameter	DUMP_OUTPUT = 'd3;
 
 
-parameter	BASE = 22'h200000;
+parameter	BASE = 20'h20000;
 
 input				clk;
 input				rst_n;
@@ -32,13 +32,13 @@ reg			[1:0]	next_state;
  *	Take input
  *
  */
-reg			[22:0]	dividend;
+reg			[20:0]	dividend;
 always @(posedge clk) begin
 	if (!rst_n) begin
 		dividend <= 'd0;		
 	end
 	else if (current_state == STORE_INPUT) begin
-		dividend <= {in_data_1, {12'b0}};
+		dividend <= {in_data_1, {10'b0}};
 	end
 	else if (current_state == INIT_STATE) begin
 		dividend <= 'd0;
@@ -50,16 +50,14 @@ end
  *	Compute Division
  *
  */
-reg			[22:0]	dividend_match;
-reg			[22:0]	current_base;
-reg			[22:0]	out_extend;
-wire		[22:0]	guess_result = dividend_match | current_base;
+//reg			[22:0]	out_extend;
+reg			[20:0]	current_base;
+wire		[20:0]	guess_result = (out_extend | current_base) * in_data_2;
 reg					terminate_flag;
 always @(posedge clk) begin
 	if (!rst_n) begin
-		dividend_match <= 'd0;		
+		out_data <= 'd0;		
 		current_base <= BASE;
-		out_extend <= 'd0;
 		terminate_flag <= 1'b0;
 	end
 	else if (current_state==DIVIDE && current_base=='d0) begin // all iteration done
@@ -68,20 +66,18 @@ always @(posedge clk) begin
 	else if (current_state == DIVIDE) begin
 		current_base <= current_base >> 1'b1;
 		if(guess_result < dividend) begin //correct guess
-			dividend_match <= guess_result;
-			out_extend <= out_extend | current_base;
+			out_data <= out_data | current_base;
 		end
 		else if (guess_result == dividend) begin// exact match!
-			dividend_match <= guess_result;
-			out_extend <= out_extend | current_base;
+			out_data <= out_data | current_base;
 			terminate_flag <= 1'b1;
 		end
 		else begin // wrong guess, don't take result
-			//dividend_match <= dividend_match; dont have to do anything
+			out_data <= out_data;
 		end
 	end
 	else if (current_state == INIT_STATE) begin
-		dividend_match <= 'd0;
+		out_data <= 'd0;
 		current_base <= BASE;
 		terminate_flag <= 1'b0;
 	end
@@ -98,7 +94,6 @@ always @(posedge clk) begin
 		out_valid <= 1'b0;
 	end
 	else if (current_state == DUMP_OUTPUT) begin
-		out_data <= out_extend[22:2];
 		out_valid <= 1'b1;
 	end
 	else if (current_state == INIT_STATE) begin
