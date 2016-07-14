@@ -53,7 +53,7 @@ end
  */
 //reg			[22:0]	out_extend;
 reg			[19:0]	current_base;
-wire		[59:0]	guess_result = (out_data | current_base) ** in_data_2;
+wire		[59:0]	guess_result = ((out_data | current_base) ** in_data_2) << (in_data_2-1)*10;
 reg					terminate_flag;
 always @(posedge clk) begin
 	if (!rst_n) begin
