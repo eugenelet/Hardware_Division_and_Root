@@ -63,6 +63,7 @@ reg					terminate_flag;
 always @(*) begin
 	if (in_data_2 < 4) begin
 		guess_result = ( (out_data|current_base) ** in_data_2 ) << ((3-in_data_2)*20);//Q10.50
+		pow_result_shift = pow_result;
 	end
 	else if (in_data_2 < 7) begin
 		guess_result_temp = ( (out_data|current_base) ** 3 );//Q10.50
