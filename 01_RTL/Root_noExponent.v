@@ -55,51 +55,11 @@ reg			[19:0]	current_base;
 reg			[139:0]	guess_result;// = ((out_data | current_base) ** in_data_2);// << (5-in_data_2)*10;
 reg			[139:0]	pow_result_shift;// = pow_result >> (in_data_2-1)*10;
 reg					terminate_flag;
-reg			[139:0] exponent_result;
-
-
-/*
- *	Compute Exponent
- *
- */
-always @(*) begin
-	case(in_data_2)
-	'd0: begin
-		exponent_result = 'd1;
-	end
-	'd1: begin
-		exponent_result = (out_data|current_base);
-	end
-	'd2: begin
-		exponent_result = (out_data|current_base) * (out_data|current_base);
-	end
-	'd3: begin
-		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base);
-	end
-	'd4: begin
-		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * ;
-	end
-	'd5: begin
-		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * 
-							(out_data|current_base);
-	end
-	'd6: begin
-		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * 
-							(out_data|current_base) * (out_data|current_base);
-	end
-	'd7: begin
-		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * 
-							(out_data|current_base) * (out_data|current_base) * (out_data|current_base);
-	end
-	default: exponent_result = 'd0;
-end
 
 always @(*) begin
-	guess_result = exponent_result << ((7-in_data_2)*20);
+	guess_result = ( (out_data|current_base) ** in_data_2 ) << ((7-in_data_2)*20);
 	pow_result_shift = pow_result >> (in_data_2-1)*10;
 end
-
-
 
 always @(posedge clk) begin
 	if (!rst_n) begin
