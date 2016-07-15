@@ -8,10 +8,10 @@ module Division(
     out_data
 );
 
-parameter	INIT_STATE	= 'd0;
-parameter	STORE_INPUT	= 'd1;
-parameter	DIVIDE 		= 'd2;
-parameter	DUMP_OUTPUT = 'd3;
+parameter	ST_INIT		= 'd0;
+parameter	ST_STORE	= 'd1;
+parameter	ST_DIVIDE 	= 'd2;
+parameter	ST_OUTPUT 	= 'd3;
 
 
 parameter	BASE = 20'h80000; //19th bit
@@ -32,16 +32,16 @@ reg			[1:0]	next_state;
  *	Take input
  *
  */
-reg			[21:0]	dividend;
+reg			[21:0]	ST_DIVIDEnd;
 always @(posedge clk) begin
 	if (!rst_n) begin
-		dividend <= 'd0;		
+		ST_DIVIDEnd <= 'd0;		
 	end
-	else if (current_state == STORE_INPUT) begin
-		dividend <= {1'b0, in_data_1, {10'b0}};
+	else if (current_state == ST_STORE) begin
+		ST_DIVIDEnd <= {1'b0, in_data_1, {10'b0}};
 	end
-	else if (current_state == INIT_STATE) begin
-		dividend <= 'd0;
+	else if (current_state == ST_INIT) begin
+		ST_DIVIDEnd <= 'd0;
 	end
 end
 
@@ -60,15 +60,15 @@ always @(posedge clk) begin
 		current_base <= BASE;
 		terminate_flag <= 1'b0;
 	end
-	else if (current_state==DIVIDE && current_base=='d0) begin // all iteration done
+	else if (current_state==ST_DIVIDE && current_base=='d0) begin // all iteration done
 		terminate_flag <= 1'b1;
 	end
-	else if (current_state == DIVIDE) begin
+	else if (current_state == ST_DIVIDE) begin
 		current_base <= current_base >> 1'b1;
-		if(guess_result < dividend) begin //correct guess
+		if(guess_result < ST_DIVIDEnd) begin //correct guess
 			out_data <= out_data | current_base;
 		end
-		else if (guess_result == dividend) begin// exact match!
+		else if (guess_result == ST_DIVIDEnd) begin// exact match!
 			out_data <= out_data | current_base;
 			terminate_flag <= 1'b1;
 		end
@@ -76,7 +76,7 @@ always @(posedge clk) begin
 			out_data <= out_data;
 		end
 	end
-	else if (current_state == INIT_STATE) begin
+	else if (current_state == ST_INIT) begin
 		out_data <= 'd0;
 		current_base <= BASE;
 		terminate_flag <= 1'b0;
@@ -93,10 +93,10 @@ always @(posedge clk) begin
 		out_data <= 'd0;	
 		out_valid <= 1'b0;
 	end
-	else if (current_state == DUMP_OUTPUT) begin
+	else if (current_state == ST_OUTPUT) begin
 		out_valid <= 1'b1;
 	end
-	else if (current_state == INIT_STATE) begin
+	else if (current_state == ST_INIT) begin
 		out_valid <= 1'b0;
 	end
 end
@@ -108,7 +108,7 @@ end
 
 always @(posedge clk) begin
 	if (!rst_n) begin
-		current_state <= INIT_STATE;
+		current_state <= ST_INIT;
 		next_state <= 'd0;
 	end
 	else begin
@@ -118,33 +118,33 @@ end
 
 always @(*) begin
 	case(current_state)
-		INIT_STATE: begin
+		ST_INIT: begin
 			if(in_valid) begin
-				next_state = STORE_INPUT;
+				next_state = ST_STORE;
 			end
 			else begin
 				next_state = current_state;
 			end
 		end
-		STORE_INPUT: begin
+		ST_STORE: begin
 			if(!in_valid) begin
-				next_state = DIVIDE;
+				next_state = ST_DIVIDE;
 			end
 			else begin
 				next_state = current_state;
 			end
 		end
-		DIVIDE: begin
+		ST_DIVIDE: begin
 			if (terminate_flag) begin
-				next_state = DUMP_OUTPUT;
+				next_state = ST_OUTPUT;
 			end
 			else begin
 				next_state = current_state;
 			end
 		end
-		DUMP_OUTPUT: begin
+		ST_OUTPUT: begin
 			if (out_valid) begin
-				next_state = INIT_STATE;
+				next_state = ST_INIT;
 			end
 			else begin
 				next_state = current_state;

@@ -8,11 +8,10 @@ module Root(
     out_data
 );
 
-parameter	INIT_STATE	= 'd0;
-parameter	STORE_INPUT	= 'd1;
-parameter	COMPARE		= 'd2;
-//parameter	COMPUTE_POW	= 'd3;
-parameter	DUMP_OUTPUT = 'd3;
+parameter	ST_INIT		= 'd0;
+parameter	ST_STORE	= 'd1;
+parameter	ST_COMPUTE	= 'd2;
+parameter	ST_OUTPUT 	= 'd3;
 
 
 parameter	BASE = 20'h80000; //20th bit
@@ -38,10 +37,10 @@ always @(posedge clk) begin
 	if (!rst_n) begin
 		pow_result <= 'd0;		
 	end
-	else if (current_state == STORE_INPUT) begin
+	else if (current_state == ST_STORE) begin
 		pow_result <= {in_data_1, {130'b0}};
 	end
-	else if (current_state == INIT_STATE) begin
+	else if (current_state == ST_INIT) begin
 		pow_result <= 'd0;
 	end
 end
@@ -51,11 +50,8 @@ end
  *	Compute Root
  *
  */
-//reg			[22:0]	out_extend;
 reg			[19:0]	current_base;
-wire		[139:0]	debug_guess = (out_data | current_base) ** in_data_2;
-//reg			[59:0]	guess_result_temp;
-//reg			[59:0]	guess_result_temp2;
+//wire		[139:0]	debug_guess = (out_data | current_base) ** in_data_2;
 reg			[139:0]	guess_result;// = ((out_data | current_base) ** in_data_2);// << (5-in_data_2)*10;
 reg			[139:0]	pow_result_shift;// = pow_result >> (in_data_2-1)*10;
 reg					terminate_flag;
@@ -63,26 +59,6 @@ reg					terminate_flag;
 always @(*) begin
 	guess_result = ( (out_data|current_base) ** in_data_2 ) << ((7-in_data_2)*20);
 	pow_result_shift = pow_result >> (in_data_2-1)*10;
-//	if (in_data_2 < 4) begin
-//		//guess_result = ( (out_data|current_base) ** in_data_2 ) << ((3-in_data_2)*20);//Q10.50 Q20.40 Q30.30
-//		//pow_result_shift = pow_result >> (in_data_2-1)*10;
-//		guess_result = ( (out_data|current_base) ** in_data_2 );// << ((3-in_data_2)*20);//Q5.55 Q10.50 Q15.45
-//		pow_result_shift = pow_result >> (5 + (3-in_data_2)*15);
-//	end
-//	else if (in_data_2 < 7) begin
-//		guess_result_temp = ( (out_data|current_base) ** 3 );//Q30.30
-//		guess_result = ( (guess_result_temp >> 40) * ( ((out_data|current_base)**(in_data_2-3)) >> (in_data_2-4)*20) ) << 20;
-//		pow_result_shift = pow_result >> 10;
-//		//(Q10.10 * Q10.10) << 20
-//	end
-//	else begin
-//		guess_result_temp = ( (out_data|current_base) ** 3 );//Q10.50
-//		guess_result_temp2 = ( (guess_result_temp >> 40) * ( ((out_data|current_base)**3) >> 40) ) >> 10;
-//		//Q10.10 * Q10.10 = Q20.20 >> 10 =Q20.10
-//		guess_result = guess_result_temp2 * (out_data | current_base) ;
-//		pow_result_shift = pow_result >> 20;
-//		
-//	end
 end
 
 always @(posedge clk) begin
@@ -107,7 +83,7 @@ always @(posedge clk) begin
 			out_data <= out_data;
 		end
 	end
-	else if (current_state == INIT_STATE) begin
+	else if (current_state == ST_INIT) begin
 		out_data <= 'd0;
 		current_base <= BASE;
 		terminate_flag <= 1'b0;
@@ -124,10 +100,10 @@ always @(posedge clk) begin
 		out_data <= 'd0;	
 		out_valid <= 1'b0;
 	end
-	else if (current_state == DUMP_OUTPUT) begin
+	else if (current_state == ST_OUTPUT) begin
 		out_valid <= 1'b1;
 	end
-	else if (current_state == INIT_STATE) begin
+	else if (current_state == ST_INIT) begin
 		out_valid <= 1'b0;
 	end
 end
@@ -139,7 +115,7 @@ end
 
 always @(posedge clk) begin
 	if (!rst_n) begin
-		current_state <= INIT_STATE;
+		current_state <= ST_INIT;
 		next_state <= 'd0;
 	end
 	else begin
@@ -149,44 +125,36 @@ end
 
 always @(*) begin
 	case(current_state)
-		INIT_STATE: begin
+		ST_INIT: begin
 			if(in_valid) begin
-				next_state = STORE_INPUT;
+				next_state = ST_STORE;
 			end
 			else begin
 				next_state = current_state;
 			end
 		end
-		STORE_INPUT: begin
+		ST_STORE: begin
 			if(!in_valid) begin
-				next_state = COMPARE;
+				next_state = ST_COMPUTE;
 			end
 			else begin
 				next_state = current_state;
 			end
 		end
-		COMPARE: begin
+		ST_COMPUTE: begin
 			//if (compare_fail) begin
 			//	next_state = COMPUTE_POW;
 			//end
 			if (terminate_flag) begin
-				next_state = DUMP_OUTPUT;
+				next_state = ST_OUTPUT;
 			end
 			else begin
 				next_state = current_state;
 			end
 		end
-		//COMPUTE_POW: begin
-		//	if(compute_done) begin
-		//		next_state = COMPARE;
-		//	end
-		//	else begin
-		//		next_state = current_state;
-		//	end
-		//end
-		DUMP_OUTPUT: begin
+		ST_OUTPUT: begin
 			if (out_valid) begin
-				next_state = INIT_STATE;
+				next_state = ST_INIT;
 			end
 			else begin
 				next_state = current_state;
