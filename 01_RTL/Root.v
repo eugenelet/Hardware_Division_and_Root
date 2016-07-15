@@ -62,11 +62,11 @@ reg					terminate_flag;
 
 always @(*) begin
 	if (in_data_2 < 4) begin
-		guess_result = ( (out_data|current_base) ** in_data_2 ) << ((3-in_data_2)*20);//Q10.50
-		pow_result_shift = pow_result;
+		guess_result = ( (out_data|current_base) ** in_data_2 ) << ((3-in_data_2)*20);//Q10.50 Q20.40 Q30.30
+		pow_result_shift = pow_result >> (in_data_2-1)*10;
 	end
 	else if (in_data_2 < 7) begin
-		guess_result_temp = ( (out_data|current_base) ** 3 );//Q10.50
+		guess_result_temp = ( (out_data|current_base) ** 3 );//Q30.30
 		guess_result = ( (guess_result_temp >> 40) * ( ((out_data|current_base)**(in_data_2-3)) >> (in_data_2-4)*20) ) << 20;
 		pow_result_shift = pow_result >> 10;
 		//(Q10.10 * Q10.10) << 20
