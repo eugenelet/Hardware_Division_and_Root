@@ -67,10 +67,10 @@ always @(posedge clk) begin
 		current_base <= BASE;
 		terminate_flag <= 1'b0;
 	end
-	else if (current_state==COMPARE && current_base=='d0) begin // all iteration done
+	else if (current_state==ST_COMPUTE && current_base=='d0) begin // all iteration done
 		terminate_flag <= 1'b1;
 	end
-	else if (current_state == COMPARE) begin
+	else if (current_state == ST_COMPUTE) begin
 		current_base <= current_base >> 1'b1;
 		if(guess_result < pow_result_shift) begin //correct guess
 			out_data <= out_data | current_base;
@@ -142,7 +142,7 @@ always @(*) begin
 			end
 		end
 		ST_COMPUTE: begin
-			//if (compare_fail) begin
+			//if (ST_COMPUTE_fail) begin
 			//	next_state = COMPUTE_POW;
 			//end
 			if (terminate_flag) begin
