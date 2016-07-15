@@ -109,7 +109,6 @@ end
 always @(posedge clk) begin
 	if (!rst_n) begin
 		current_state <= ST_INIT;
-		next_state <= 'd0;
 	end
 	else begin
 		current_state <= next_state;
@@ -117,40 +116,46 @@ always @(posedge clk) begin
 end
 
 always @(*) begin
-	case(current_state)
-		ST_INIT: begin
-			if(in_valid) begin
-				next_state = ST_STORE;
+	if (!rst_n) begin
+		next_state = 'd0;
+	end
+	else begin
+		case(current_state)
+			ST_INIT: begin
+				if(in_valid) begin
+					next_state = ST_STORE;
+				end
+				else begin
+					next_state = current_state;
+				end
 			end
-			else begin
-				next_state = current_state;
+			ST_STORE: begin
+				if(!in_valid) begin
+					next_state = ST_DIVIDE;
+				end
+				else begin
+					next_state = current_state;
+				end
 			end
-		end
-		ST_STORE: begin
-			if(!in_valid) begin
-				next_state = ST_DIVIDE;
+			ST_DIVIDE: begin
+				if (terminate_flag) begin
+					next_state = ST_OUTPUT;
+				end
+				else begin
+					next_state = current_state;
+				end
 			end
-			else begin
-				next_state = current_state;
+			ST_OUTPUT: begin
+				if (out_valid) begin
+					next_state = ST_INIT;
+				end
+				else begin
+					next_state = current_state;
+				end
 			end
-		end
-		ST_DIVIDE: begin
-			if (terminate_flag) begin
-				next_state = ST_OUTPUT;
-			end
-			else begin
-				next_state = current_state;
-			end
-		end
-		ST_OUTPUT: begin
-			if (out_valid) begin
-				next_state = ST_INIT;
-			end
-			else begin
-				next_state = current_state;
-			end
-		end
-	endcase
+		endcase	
+	end
+	
 end
 
 endmodule
