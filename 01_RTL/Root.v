@@ -62,8 +62,10 @@ reg					terminate_flag;
 
 always @(*) begin
 	if (in_data_2 < 4) begin
-		guess_result = ( (out_data|current_base) ** in_data_2 ) << ((3-in_data_2)*20);//Q10.50 Q20.40 Q30.30
-		pow_result_shift = pow_result >> (in_data_2-1)*10;
+		//guess_result = ( (out_data|current_base) ** in_data_2 ) << ((3-in_data_2)*20);//Q10.50 Q20.40 Q30.30
+		//pow_result_shift = pow_result >> (in_data_2-1)*10;
+		guess_result = ( (out_data|current_base) ** in_data_2 );// << ((3-in_data_2)*20);//Q5.55 Q10.50 Q15.45
+		pow_result_shift = pow_result >> (5 + (3-in_data_2)*15);
 	end
 	else if (in_data_2 < 7) begin
 		guess_result_temp = ( (out_data|current_base) ** 3 );//Q30.30
@@ -121,6 +123,7 @@ always @(posedge clk) begin
 		out_valid <= 1'b0;
 	end
 	else if (current_state == DUMP_OUTPUT) begin
+		out_data <= out_data >> 'd5;
 		out_valid <= 1'b1;
 	end
 	else if (current_state == INIT_STATE) begin
