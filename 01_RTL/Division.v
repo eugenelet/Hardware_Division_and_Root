@@ -90,7 +90,7 @@ end
  */
 always @(posedge clk) begin
 	if (!rst_n) begin
-		out_data <= 'd0;	
+		//out_data <= 'd0;	
 		out_valid <= 1'b0;
 	end
 	else if (current_state == ST_OUTPUT) begin
