@@ -77,7 +77,7 @@ always @(*) begin
 		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base);
 	end
 	'd4: begin
-		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * ;
+		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * (out_data|current_base);
 	end
 	'd5: begin
 		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * 
