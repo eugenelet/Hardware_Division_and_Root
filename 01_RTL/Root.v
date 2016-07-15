@@ -92,6 +92,7 @@ always @(*) begin
 							(out_data|current_base) * (out_data|current_base) * (out_data|current_base);
 	end
 	default: exponent_result = 'd0;
+	endcase
 end
 
 always @(*) begin
