@@ -33,13 +33,13 @@ reg			[1:0]	next_state;
  *	Take input
  *
  */
-reg			[59:0]	pow_result;
+reg			[139:0]	pow_result;
 always @(posedge clk) begin
 	if (!rst_n) begin
 		pow_result <= 'd0;		
 	end
 	else if (current_state == STORE_INPUT) begin
-		pow_result <= {in_data_1, {50'b0}};
+		pow_result <= {in_data_1, {130'b0}};
 	end
 	else if (current_state == INIT_STATE) begin
 		pow_result <= 'd0;
@@ -53,34 +53,36 @@ end
  */
 //reg			[22:0]	out_extend;
 reg			[19:0]	current_base;
-wire		[59:0]	debug_guess = (out_data | current_base) ** in_data_2;
-reg			[59:0]	guess_result_temp;
-reg			[59:0]	guess_result_temp2;
-reg			[59:0]	guess_result;// = ((out_data | current_base) ** in_data_2);// << (5-in_data_2)*10;
-reg			[59:0]	pow_result_shift;// = pow_result >> (in_data_2-1)*10;
+wire		[139:0]	debug_guess = (out_data | current_base) ** in_data_2;
+//reg			[59:0]	guess_result_temp;
+//reg			[59:0]	guess_result_temp2;
+reg			[139:0]	guess_result;// = ((out_data | current_base) ** in_data_2);// << (5-in_data_2)*10;
+reg			[139:0]	pow_result_shift;// = pow_result >> (in_data_2-1)*10;
 reg					terminate_flag;
 
 always @(*) begin
-	if (in_data_2 < 4) begin
-		//guess_result = ( (out_data|current_base) ** in_data_2 ) << ((3-in_data_2)*20);//Q10.50 Q20.40 Q30.30
-		//pow_result_shift = pow_result >> (in_data_2-1)*10;
-		guess_result = ( (out_data|current_base) ** in_data_2 );// << ((3-in_data_2)*20);//Q5.55 Q10.50 Q15.45
-		pow_result_shift = pow_result >> (5 + (3-in_data_2)*15);
-	end
-	else if (in_data_2 < 7) begin
-		guess_result_temp = ( (out_data|current_base) ** 3 );//Q30.30
-		guess_result = ( (guess_result_temp >> 40) * ( ((out_data|current_base)**(in_data_2-3)) >> (in_data_2-4)*20) ) << 20;
-		pow_result_shift = pow_result >> 10;
-		//(Q10.10 * Q10.10) << 20
-	end
-	else begin
-		guess_result_temp = ( (out_data|current_base) ** 3 );//Q10.50
-		guess_result_temp2 = ( (guess_result_temp >> 40) * ( ((out_data|current_base)**3) >> 40) ) >> 10;
-		//Q10.10 * Q10.10 = Q20.20 >> 10 =Q20.10
-		guess_result = guess_result_temp2 * (out_data | current_base) ;
-		pow_result_shift = pow_result >> 20;
-		
-	end
+	guess_result = ( (out_data|current_base) ** in_data_2 ) << ((7-in_data_2)*20);
+	pow_result_shift = pow_result >> (in_data_2-1)*10;
+//	if (in_data_2 < 4) begin
+//		//guess_result = ( (out_data|current_base) ** in_data_2 ) << ((3-in_data_2)*20);//Q10.50 Q20.40 Q30.30
+//		//pow_result_shift = pow_result >> (in_data_2-1)*10;
+//		guess_result = ( (out_data|current_base) ** in_data_2 );// << ((3-in_data_2)*20);//Q5.55 Q10.50 Q15.45
+//		pow_result_shift = pow_result >> (5 + (3-in_data_2)*15);
+//	end
+//	else if (in_data_2 < 7) begin
+//		guess_result_temp = ( (out_data|current_base) ** 3 );//Q30.30
+//		guess_result = ( (guess_result_temp >> 40) * ( ((out_data|current_base)**(in_data_2-3)) >> (in_data_2-4)*20) ) << 20;
+//		pow_result_shift = pow_result >> 10;
+//		//(Q10.10 * Q10.10) << 20
+//	end
+//	else begin
+//		guess_result_temp = ( (out_data|current_base) ** 3 );//Q10.50
+//		guess_result_temp2 = ( (guess_result_temp >> 40) * ( ((out_data|current_base)**3) >> 40) ) >> 10;
+//		//Q10.10 * Q10.10 = Q20.20 >> 10 =Q20.10
+//		guess_result = guess_result_temp2 * (out_data | current_base) ;
+//		pow_result_shift = pow_result >> 20;
+//		
+//	end
 end
 
 always @(posedge clk) begin
@@ -123,7 +125,6 @@ always @(posedge clk) begin
 		out_valid <= 1'b0;
 	end
 	else if (current_state == DUMP_OUTPUT) begin
-		out_data <= out_data >> 'd5;
 		out_valid <= 1'b1;
 	end
 	else if (current_state == INIT_STATE) begin
