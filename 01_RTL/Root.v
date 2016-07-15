@@ -53,7 +53,7 @@ end
  */
 //reg			[22:0]	out_extend;
 reg			[19:0]	current_base;
-reg			[59:0]	debug_guess = (out_data | current_base) ** in_data_2;
+wire		[59:0]	debug_guess = (out_data | current_base) ** in_data_2;
 reg			[59:0]	guess_result_temp;
 reg			[59:0]	guess_result_temp2;
 reg			[59:0]	guess_result;// = ((out_data | current_base) ** in_data_2);// << (5-in_data_2)*10;
