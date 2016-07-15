@@ -53,10 +53,29 @@ end
  */
 //reg			[22:0]	out_extend;
 reg			[19:0]	current_base;
-wire		[59:0]	debug_guess = (out_data | current_base) ** in_data_2;
-wire		[59:0]	guess_result = ((out_data | current_base) ** in_data_2);// << (5-in_data_2)*10;
-wire		[59:0]	pow_result_shift = pow_result >> (in_data_2-1)*10;
+reg			[59:0]	debug_guess = (out_data | current_base) ** in_data_2;
+reg			[59:0]	guess_result_temp;
+reg			[59:0]	guess_result_temp2;
+reg			[59:0]	guess_result;// = ((out_data | current_base) ** in_data_2);// << (5-in_data_2)*10;
+//wire		[59:0]	pow_result_shift = pow_result >> (in_data_2-1)*10;
 reg					terminate_flag;
+
+always @(*) begin
+	if (in_data_2 < 4) begin
+		guess_result = ( (out_data | current_base) ** in_data_2 ) << (5-in_data_2)*10;
+	end
+	else if (in_data_2 < 7) begin
+		guess_result_temp = ( ((out_data | current_base) ** 3) << 20 ) ;//Q10.50
+		guess_result = guess_result_temp * ( ( (out_data|current_base)**(in_data_2-3) )<< (8-in_data_2)*10);//Q10.50 * Q10.50
+	end
+	else begin
+		guess_result_temp = ( ((out_data | current_base) ** 3) << 20 ) ;//Q10.50
+		guess_result_temp2 = guess_result_temp * ( ( (out_data|current_base)**(in_data_2-3) )<< (8-in_data_2)*10);//Q10.50 * Q10.50
+		guess_result = guess_result_temp2 * (out_data | current_base)<<40 ;
+		
+	end
+end
+
 always @(posedge clk) begin
 	if (!rst_n) begin
 		out_data <= 'd0;		
@@ -68,10 +87,10 @@ always @(posedge clk) begin
 	end
 	else if (current_state == COMPARE) begin
 		current_base <= current_base >> 1'b1;
-		if(guess_result < pow_result_shift) begin //correct guess
+		if(guess_result < pow_result) begin //correct guess
 			out_data <= out_data | current_base;
 		end
-		else if (guess_result == pow_result_shift) begin// exact match!
+		else if (guess_result == pow_result) begin// exact match!
 			out_data <= out_data | current_base;
 			terminate_flag <= 1'b1;
 		end
