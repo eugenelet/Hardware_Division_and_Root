@@ -32,16 +32,16 @@ reg			[1:0]	next_state;
  *	Take input
  *
  */
-reg			[21:0]	ST_DIVIDEnd;
+reg			[21:0]	dividend;
 always @(posedge clk) begin
 	if (!rst_n) begin
-		ST_DIVIDEnd <= 'd0;		
+		dividend <= 'd0;		
 	end
 	else if (current_state == ST_STORE) begin
-		ST_DIVIDEnd <= {1'b0, in_data_1, {10'b0}};
+		dividend <= {1'b0, in_data_1, {10'b0}};
 	end
 	else if (current_state == ST_INIT) begin
-		ST_DIVIDEnd <= 'd0;
+		dividend <= 'd0;
 	end
 end
 
@@ -50,35 +50,44 @@ end
  *	Compute Division
  *
  */
-//reg			[22:0]	out_extend;
 reg			[20:0]	current_base;
-wire		[21:0]	guess_result = (out_data | current_base) * in_data_2;
-reg					terminate_flag;
+
 always @(posedge clk) begin
 	if (!rst_n) begin
-		out_data <= 'd0;		
 		current_base <= BASE;
-		terminate_flag <= 1'b0;
-	end
-	else if (current_state==ST_DIVIDE && current_base=='d0) begin // all iteration done
-		terminate_flag <= 1'b1;
 	end
 	else if (current_state == ST_DIVIDE) begin
 		current_base <= current_base >> 1'b1;
-		if(guess_result < ST_DIVIDEnd) begin //correct guess
+	end
+	else if (current_state == ST_INIT) begin
+		current_base <= BASE;
+	end
+end
+
+wire		[21:0]	guess_result = (out_data | current_base) * in_data_2;
+always @(posedge clk) begin
+	if (!rst_n) begin
+		out_data <= 'd0;		
+	end
+	else if(current_state==ST_DIVIDE && (guess_result<dividend || guess_result==dividend) ) begin //correct guess OR exact match
 			out_data <= out_data | current_base;
-		end
-		else if (guess_result == ST_DIVIDEnd) begin// exact match!
-			out_data <= out_data | current_base;
-			terminate_flag <= 1'b1;
-		end
-		else begin // wrong guess, don't take result
-			out_data <= out_data;
-		end
 	end
 	else if (current_state == ST_INIT) begin
 		out_data <= 'd0;
-		current_base <= BASE;
+	end
+end
+
+
+reg					terminate_flag;
+always @(posedge clk) begin
+	if (!rst_n) begin
+		terminate_flag <= 1'b0;
+	end
+	else if ( current_state==ST_DIVIDE && (current_base=='d0 || guess_result == dividend)  ) begin 
+	// all iteration done OR exact match
+		terminate_flag <= 1'b1;
+	end
+	else if (current_state == ST_INIT) begin
 		terminate_flag <= 1'b0;
 	end
 end
@@ -96,7 +105,7 @@ always @(posedge clk) begin
 	else if (current_state == ST_OUTPUT) begin
 		out_valid <= 1'b1;
 	end
-	else if (current_state == ST_INIT) begin
+	else if (current_state == ST_INIT) begin//else
 		out_valid <= 1'b0;
 	end
 end
@@ -134,7 +143,7 @@ always @(*) begin
 					next_state = ST_DIVIDE;
 				end
 				else begin
-					next_state = current_state;
+					next_state = current_state;//dont write ns = cs
 				end
 			end
 			ST_DIVIDE: begin

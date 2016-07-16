@@ -46,18 +46,28 @@ Root rt(
 always @(posedge clk) begin
     if (!rst_n) begin
         out_valid <= 1'b0;
-        out_data <= 'd0;        
     end
     else if (out_valid_div && !in_mode) begin
         out_valid <= out_valid_div;
-        out_data <= out_div;
     end
     else if(out_valid_root && in_mode) begin
         out_valid <= out_valid_root;
-        out_data <= out_root;
     end
     else begin
         out_valid <= 1'b0;
+    end
+end
+
+
+always @(posedge clk) begin
+    if (!rst_n) begin
+        out_data <= 'd0;        
+    end
+    else if (out_valid_div && !in_mode) begin
+        out_data <= out_div;
+    end
+    else if(out_valid_root && in_mode) begin
+        out_data <= out_root;
     end
 end
 
