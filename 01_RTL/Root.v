@@ -14,7 +14,7 @@ parameter	ST_POW		= 'd2;
 parameter	ST_OUTPUT 	= 'd3;
 
 
-parameter	BASE = 20'h4000; //15th bit
+parameter	BASE = 20'h04000; //15th bit
 
 input				clk;
 input				rst_n;
