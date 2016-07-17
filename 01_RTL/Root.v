@@ -210,7 +210,7 @@ always @(*) begin
 			end
 			ST_POW: begin
 				if (compute_done) begin
-					next_state = ST_COMPARE
+					next_state = ST_COMPARE;
 				end
 				else begin
 					next_state = ST_POW;
