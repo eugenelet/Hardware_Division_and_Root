@@ -158,7 +158,10 @@ always @(posedge clk) begin
 	if (!rst_n) begin
 		current_guess <= 'd0;
 	end
-	else if (current_state == ST_COMPARE) begin
+	else if (current_state==ST_COMPARE && pow_result<extended_in) begin
+		current_guess <= current_guess | current_base;
+	end
+	else if (current_state==ST_COMPARE) begin
 		current_guess <= guess_result | current_base;
 	end
 	else if (current_state == ST_INIT) begin
