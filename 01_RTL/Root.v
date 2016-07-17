@@ -142,6 +142,9 @@ always @(posedge clk) begin
 	else if (current_state == ST_COMPARE) begin
 		current_base <= current_base >> 1'b1;
 	end
+	else if (current_state == ST_OUTPUT) begin
+		current_base <= 'hfffff;//to prevent optimization
+	end
 	//IDLE
 	else if (current_state == ST_IDLE) begin
 		current_base <= BASE;
