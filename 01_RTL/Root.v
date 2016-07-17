@@ -97,12 +97,13 @@ end
 
 
 reg		[19:0]	guess_result;
+reg		[19:0]	pow_result;
 always @(posedge clk) begin
 	if (!rst_n) begin
-		guess_result <= guess_result | current_base;		
+		pow_result <= guess_result | current_base;		
 	end
 	else if (current_state==ST_POW && pow_count<in_data_2) begin
-		guess_result <= ( guess_result * (guess_result|current_base) ) >> 10;
+		pow_result <= ( pow_result * (guess_result|current_base) ) >> 10;
 	end
 end
 
@@ -120,7 +121,7 @@ always @(posedge clk) begin
 end
 
 
-wire		[19:0]	shifted_out = guess_result >> 5;//only 5 bits will be fixed bits
+wire		[19:0]	shift_pow_result = pow_result >> 5;//only 5 bits will be fixed bits
 
 /*
  *	Compare Result of Power Computation
@@ -133,7 +134,7 @@ always @(posedge clk) begin
 	else if (current_state==ST_COMPARE && in_data_2=='d1) begin//pow 1
 		guess_result <= in_data_1;
 	end
-	else if (current_state==ST_COMPARE && (shifted_out<in_data_1 || shifted_out==in_data_1) ) begin
+	else if (current_state==ST_COMPARE && (shift_pow_result<in_data_1 || shift_pow_result==in_data_1) ) begin
 		guess_result <= guess_result | current_base;
 	end
 	else if (current_state == ST_INIT) begin
@@ -158,7 +159,7 @@ always @(posedge clk) begin
 	if (!rst_n) begin
 		terminate_flag <= 1'b0;
 	end
-	else if (current_state==ST_COMPARE && (current_base=='d0 || guess_result==in_data_1 || in_data_2=='d1) ) begin 
+	else if (current_state==ST_COMPARE && (current_base=='d0 || shift_pow_result==in_data_1 || in_data_2=='d1) ) begin 
 	// all iteration done OR exact match OR raised to POW 1 (no computation needed)
 		terminate_flag <= 1'b1;
 	end
