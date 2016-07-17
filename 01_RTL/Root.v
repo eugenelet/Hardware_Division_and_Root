@@ -124,7 +124,7 @@ always @(posedge clk) begin
 end
 
 
-wire		[19:0]	shift_pow_result = pow_result >> 5;//only 5 bits will be fixed bits
+//wire		[19:0]	shift_pow_result = pow_result >> 5;//only 5 bits will be fixed bits
 
 /*
  *	Compare Result of Power Computation
@@ -137,7 +137,7 @@ always @(posedge clk) begin
 	else if (current_state==ST_COMPARE && in_data_2=='d1) begin//pow 1
 		guess_result <= in_data_1;
 	end
-	else if (current_state==ST_COMPARE && (shift_pow_result<in_data_1 || shift_pow_result==in_data_1) ) begin
+	else if (current_state==ST_COMPARE && (pow_result<in_data_1 || pow_result==in_data_1) ) begin
 		guess_result <= guess_result | current_base;
 	end
 	else if (current_state == ST_INIT) begin
@@ -195,7 +195,7 @@ always @(posedge clk) begin
 		out_data <= 1'b0;
 	end
 	else if (current_state == ST_OUTPUT) begin
-		out_data <= guess_result >> 5;
+		out_data <= guess_result;
 	end
 	else begin
 		out_data <= 1'b0;
