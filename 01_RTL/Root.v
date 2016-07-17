@@ -109,7 +109,7 @@ always @(posedge clk) begin
 	else if (current_state==ST_POW && extended_pow>{ {10'b0}, extended_in, {10'b0} }) begin
 		pow_result <= 20'hfffff;
 	end
-	else if (current_state==ST_POW && pow_count<in_data_2) begin
+	else if (current_state==ST_POW && pow_count<(in_data_2-1)) begin
 		pow_result <= extended_pow >> 'd10;
 	end
 	else begin
