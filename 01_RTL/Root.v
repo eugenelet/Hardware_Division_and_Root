@@ -159,6 +159,7 @@ always @(posedge clk) begin
 	end
 	else if (current_state == ST_INIT) begin
 		current_guess <= 'd0;
+	end
 end
 
 
