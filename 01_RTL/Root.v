@@ -110,7 +110,7 @@ always @(posedge clk) begin
 		pow_result <= extended_pow >> 'd10;
 	end
 	else begin
-		pow_result <= current_guess;
+		pow_result <= guess_result | current_base;
 	end
 end
 
