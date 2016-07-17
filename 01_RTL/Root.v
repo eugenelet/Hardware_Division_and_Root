@@ -106,7 +106,7 @@ always @(posedge clk) begin
 	if (!rst_n) begin
 		pow_result <= current_guess;		
 	end
-	else if (current_state==ST_POW && extended_pow>{extended_in, {20'b0} }) begin
+	else if (current_state==ST_POW && extended_pow>{ {10'b0}, extended_in, {10'b0} }) begin
 		pow_result <= 20'hfffff;
 	end
 	else if (current_state==ST_POW && pow_count<in_data_2) begin
@@ -122,7 +122,7 @@ always @(posedge clk) begin
 	if (!rst_n) begin
 		compute_done <= 1'b0;		
 	end
-	else if (current_state==ST_POW && ((pow_count + 1)==in_data_2 || extended_pow>{extended_in, {20'b0} }) ) begin
+	else if (current_state==ST_POW && ((pow_count + 1)==in_data_2 || extended_pow>{ {10'b0}, extended_in, {10'b0} }) ) begin
 		compute_done <= 1'b1;
 	end
 	else begin
