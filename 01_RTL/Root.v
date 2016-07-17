@@ -158,7 +158,7 @@ always @(posedge clk) begin
 	if (!rst_n) begin
 		terminate_flag <= 1'b0;
 	end
-	else if (current_state==ST_COMPARE && (current_base=='d0 || guess_result==pow_result_shift || in_data_2=='d1) ) begin 
+	else if (current_state==ST_COMPARE && (current_base=='d0 || guess_result==in_data_1 || in_data_2=='d1) ) begin 
 	// all iteration done OR exact match OR raised to POW 1 (no computation needed)
 		terminate_flag <= 1'b1;
 	end
