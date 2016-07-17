@@ -9,8 +9,8 @@ module Root(
 );
 
 parameter	ST_INIT		= 'd0;
-parameter	ST_COMPARE	= 'd1;
-parameter	ST_POW		= 'd2;
+parameter	ST_STORE	= 'd1;
+parameter	ST_COMPUTE	= 'd2;
 parameter	ST_OUTPUT 	= 'd3;
 
 
@@ -29,10 +29,29 @@ reg			[1:0]	next_state;
 
 
 /*
+ *	Take input
+ *
+ */
+reg			[139:0]	pow_result;
+always @(posedge clk) begin
+	if (!rst_n) begin
+		pow_result <= 'd0;		
+	end
+	else if (current_state == ST_STORE) begin
+		pow_result <= {in_data_1, {130'b0}};
+	end
+	else if (current_state == ST_INIT) begin
+		pow_result <= 'd0;
+	end
+end
+
+
+/*
  *	Compute Root
  *
  */
 reg			[19:0]	current_base;
+//wire		[139:0]	debug_guess = (out_data | current_base) ** in_data_2;
 reg			[139:0]	guess_result;// = ((out_data | current_base) ** in_data_2);// << (5-in_data_2)*10;
 reg			[139:0]	pow_result_shift;// = pow_result >> (in_data_2-1)*10;
 reg					terminate_flag;
@@ -81,79 +100,36 @@ always @(*) begin
 	pow_result_shift = pow_result >> (in_data_2-1)*10;//use mux manually
 end
 
-/*
- *	Compute Power
- *
- */
-
-reg		[2:0]	pow_count;
-always @(posedge clk) begin
-	if (!rst_n) begin
-		pow_count <= 'd0;		
-	end
-	else if (current_state == ST_POW) begin
-		pow_count <= pow_count + 1'b1;
-	end
-end
 
 
-reg		[19:0]	guess_result;
-always @(posedge clk) begin
-	if (!rst_n) begin
-		guess_result <= out_data | current_base;		
-	end
-	else if (current_state==ST_POW && pow_count<in_data_2) begin
-		guess_result <= ( guess_result * (out_data|current_base) ) >> 10;
-	end
-end
-
-
-wire		[19:0]	shifted_guess_result = guess_result >> 5;//only 5 bits will be fixed bits
-
-/*
- *	Compare Result of Power Computation
- *
- */
 always @(posedge clk) begin
 	if (!rst_n) begin
 		out_data <= 'd0;		
+		current_base <= BASE;
+		terminate_flag <= 1'b0;
 	end
-	else if (current_state==ST_COMPARE && in_data_2=='d1) begin//pow 1
-		out_data <= in_data_1;
+	else if (current_state==ST_COMPUTE && current_base=='d0) begin // all iteration done
+		terminate_flag <= 1'b1;
 	end
-	else if (current_state==ST_COMPARE && (shifted_guess_result<in_data_1 || shifted_guess_result==in_data_1) ) begin
-		out_data <= out_data | current_base;
+	else if (current_state == ST_COMPUTE) begin
+		current_base <= current_base >> 1'b1;
+		if(guess_result < pow_result_shift) begin //correct guess
+			out_data <= out_data | current_base;
+		end
+		else if (guess_result == pow_result_shift) begin// exact match!
+			out_data <= out_data | current_base;
+			terminate_flag <= 1'b1;
+		end
+		else begin // wrong guess, don't take result
+			out_data <= out_data;
+		end
 	end
 	else if (current_state == ST_INIT) begin
 		out_data <= 'd0;
-	end
-end
-
-always @(posedge clk) begin
-	if (!rst_n) begin
 		current_base <= BASE;
-	end
-	else if (current_state == ST_COMPARE) begin
-		current_base <= current_base >> 1'b1;
-	end
-	else if (current_state == ST_INIT) begin
-		current_base <= BASE;
-	end
-end
-
-always @(posedge clk) begin
-	if (!rst_n) begin
-		terminate_flag <= 1'b0;
-	end
-	else if (current_state==ST_COMPARE && (current_base=='d0 || guess_result==pow_result_shift || in_data_2=='d1) ) begin 
-	// all iteration done OR exact match OR raised to POW 1 (no computation needed)
-		terminate_flag <= 1'b1;
-	end
-	else if (current_state == ST_INIT) begin
 		terminate_flag <= 1'b0;
 	end
 end
-
 
 
 /*
@@ -162,12 +138,13 @@ end
  */
 always @(posedge clk) begin
 	if (!rst_n) begin
+		//out_data <= 'd0;	
 		out_valid <= 1'b0;
 	end
 	else if (current_state == ST_OUTPUT) begin
 		out_valid <= 1'b1;
 	end
-	else begin
+	else if (current_state == ST_INIT) begin
 		out_valid <= 1'b0;
 	end
 end
@@ -194,26 +171,29 @@ always @(*) begin
 		case(current_state)
 			ST_INIT: begin
 				if(in_valid) begin
-					next_state = ST_COMPARE;
+					next_state = ST_STORE;
 				end
 				else begin
-					next_state = ST_INIT;
+					next_state = current_state;
 				end
 			end
-			ST_COMPARE: begin
+			ST_STORE: begin
+				if(!in_valid) begin
+					next_state = ST_COMPUTE;
+				end
+				else begin
+					next_state = current_state;
+				end
+			end
+			ST_COMPUTE: begin
+				//if (ST_COMPUTE_fail) begin
+				//	next_state = COMPUTE_POW;
+				//end
 				if (terminate_flag) begin
 					next_state = ST_OUTPUT;
 				end
 				else begin
-					next_state = ST_POW;
-				end
-			end
-			ST_POW: begin
-				if (compute_done) begin
-					next_state = ST_COMPARE
-				end
-				else begin
-					next_state = ST_POW;
+					next_state = current_state;
 				end
 			end
 			ST_OUTPUT: begin
@@ -221,7 +201,7 @@ always @(*) begin
 					next_state = ST_INIT;
 				end
 				else begin
-					next_state = ST_OUTPUT;
+					next_state = current_state;
 				end
 			end
 		endcase	

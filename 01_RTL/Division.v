@@ -135,7 +135,7 @@ always @(*) begin
 					next_state = ST_STORE;
 				end
 				else begin
-					next_state = current_state;
+					next_state = ST_INIT;
 				end
 			end
 			ST_STORE: begin
@@ -143,7 +143,7 @@ always @(*) begin
 					next_state = ST_DIVIDE;
 				end
 				else begin
-					next_state = current_state;//dont write ns = cs
+					next_state = ST_STORE;//dont write ns = cs
 				end
 			end
 			ST_DIVIDE: begin
@@ -151,7 +151,7 @@ always @(*) begin
 					next_state = ST_OUTPUT;
 				end
 				else begin
-					next_state = current_state;
+					next_state = ST_DIVIDE;
 				end
 			end
 			ST_OUTPUT: begin
@@ -159,7 +159,7 @@ always @(*) begin
 					next_state = ST_INIT;
 				end
 				else begin
-					next_state = current_state;
+					next_state = ST_OUTPUT;
 				end
 			end
 		endcase	
