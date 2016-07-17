@@ -158,7 +158,7 @@ always @(posedge clk) begin
 	// all iteration done OR exact match OR raised to POW 1 (no computation needed)
 		terminate_flag <= 1'b1;
 	end
-	else begin
+	else if (current_state == ST_IDLE) begin
 		terminate_flag <= 1'b0;
 	end
 end
