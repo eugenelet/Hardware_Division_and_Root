@@ -93,6 +93,9 @@ always @(posedge clk) begin
 	else if (current_state == ST_POW) begin
 		pow_count <= pow_count + 1'b1;
 	end
+	else begin
+		pow_count <= 'd0;
+	end
 end
 
 
