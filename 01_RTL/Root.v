@@ -50,7 +50,7 @@ always @(posedge clk) begin
 end
 
 reg		[19:0]	current_guess;
-reg		[19:0]	guess_result;
+//reg		[19:0]	out_data;
 reg		[19:0]	pow_result;
 wire 	[39:0] 	extended_pow = pow_result * (current_guess);//Q10.10 * Q10.10
 always @(posedge clk) begin
@@ -69,7 +69,7 @@ always @(posedge clk) begin
 		pow_result <= current_guess | current_base;
 	end
 	else if (current_state==ST_COMPARE) begin
-		pow_result <= guess_result | current_base;
+		pow_result <= out_data | current_base;
 	end
 end
 
@@ -95,22 +95,22 @@ end
  */
 always @(posedge clk) begin
 	if (!rst_n) begin
-		guess_result <= 'd0;		
+		out_data <= 'd0;		
 	end
 
 	//Terminate Early if no POW needed
 	else if (current_state==ST_COMPARE && in_data_2=='d1) begin
-		guess_result <= extended_in;
+		out_data <= extended_in;
 	end
 
-	//Update guess_result (correct guess!)
+	//Update out_data (correct guess!)
 	else if (current_state==ST_COMPARE && (pow_result<extended_in || pow_result==extended_in) ) begin
-		guess_result <= current_guess;
+		out_data <= current_guess;
 	end
 
 	//IDLE
 	else if (current_state == ST_IDLE) begin
-		guess_result <= 'd0;
+		out_data <= 'd0;
 	end
 end
 
@@ -125,7 +125,7 @@ always @(posedge clk) begin
 	end
 	//Update current guess based on previous CORRECT guess
 	else if (current_state==ST_COMPARE) begin
-		current_guess <= guess_result | current_base;
+		current_guess <= out_data | current_base;
 	end
 	//IDLE
 	else if (current_state == ST_IDLE) begin
@@ -182,17 +182,17 @@ always @(posedge clk) begin
 end
 
 
-always @(posedge clk) begin
-	if (!rst_n) begin
-		out_data <= 1'b0;
-	end
-	else if (current_state == ST_OUTPUT) begin
-		out_data <= guess_result;
-	end
-	else begin
-		out_data <= 1'b0;
-	end
-end
+//always @(posedge clk) begin
+//	if (!rst_n) begin
+//		out_data <= 1'b0;
+//	end
+//	else if (current_state == ST_OUTPUT) begin
+//		out_data <= out_data;
+//	end
+//	else begin
+//		out_data <= 1'b0;
+//	end
+//end
 
 /*
  *	Finite State Machine
