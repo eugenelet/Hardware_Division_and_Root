@@ -113,7 +113,7 @@ always @(posedge clk) begin
 	else if (current_state==ST_POW && pow_count<in_data_2) begin
 		pow_result <= extended_pow >> 'd10;
 	end
-	else begin
+	else if (current_state == ST_COMPARE) begin
 		pow_result <= guess_result | current_base;
 	end
 end
