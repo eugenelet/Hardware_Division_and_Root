@@ -134,7 +134,7 @@ always @(posedge clk) begin
 	else if (current_state==ST_COMPARE && in_data_2=='d1) begin//pow 1
 		guess_result <= in_data_1;
 	end
-	else if (current_state==ST_COMPARE && (shift_pow_result<in_data_1 || shift_pow_result==in_data_1) ) begin
+	else if (current_state==ST_COMPARE && (shift_pow_result<in_data_1 || shift_pow_result==in_data_1 || current_base==20'h80000) ) begin
 		guess_result <= guess_result | current_base;
 	end
 	else if (current_state == ST_INIT) begin
