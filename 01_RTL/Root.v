@@ -37,7 +37,7 @@ reg			[19:0]	current_base;
 //reg			[139:0]	pow_result_shift;// = pow_result >> (in_data_2-1)*10;
 //reg			[139:0] exponent_result;
 
-wire		[19:0]	extended_in = {in_data_1, {10'b0}}
+wire		[19:0]	extended_in = {in_data_1, {10'b0}};
 /*
  *	Compute Exponent
  *
