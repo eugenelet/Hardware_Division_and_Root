@@ -98,19 +98,19 @@ always @(posedge clk) begin
 	end
 end
 
-
+reg		[19:0]	current_guess;
 reg		[19:0]	guess_result;
 reg		[19:0]	pow_result;
-wire 	[39:0] 	extended_pow = pow_result * (guess_result|current_base);//Q10.10 * Q10.10
+wire 	[39:0] 	extended_pow = pow_result * (current_guess);//Q10.10 * Q10.10
 always @(posedge clk) begin
 	if (!rst_n) begin
-		pow_result <= guess_result | current_base;		
+		pow_result <= current_guess;		
 	end
 	else if (current_state==ST_POW && pow_count<in_data_2) begin
 		pow_result <= extended_pow >> 'd10;
 	end
 	else begin
-		pow_result <= guess_result | current_base;
+		pow_result <= current_guess;
 	end
 end
 
@@ -142,12 +142,25 @@ always @(posedge clk) begin
 		guess_result <= extended_in;
 	end
 	else if (current_state==ST_COMPARE && (pow_result<extended_in || pow_result==extended_in) ) begin
-		guess_result <= guess_result | current_base;
+		guess_result <= current_guess;
 	end
 	else if (current_state == ST_INIT) begin
 		guess_result <= 'd0;
 	end
 end
+
+
+always @(posedge clk) begin
+	if (!rst_n) begin
+		current_guess <= 'd0;
+	end
+	else if (current_state == ST_COMPARE) begin
+		current_guess <= guess_result | current_base;
+	end
+	else if (current_state == ST_INIT) begin
+		current_guess <= 'd0;
+end
+
 
 always @(posedge clk) begin
 	if (!rst_n) begin
