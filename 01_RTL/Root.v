@@ -106,6 +106,19 @@ always @(posedge clk) begin
 	end
 end
 
+reg			  compute_done;
+always @(posedge clk) begin
+	if (!rst_n) begin
+		compute_done <= 1'b0;		
+	end
+	else if (current_state==ST_POW && pow_count == in_data_2) begin
+		compute_done <= 1'b1;
+	end
+	else begin
+		compute_done <= 1'b0;
+	end
+end
+
 
 wire		[19:0]	shifted_guess_result = guess_result >> 5;//only 5 bits will be fixed bits
 
