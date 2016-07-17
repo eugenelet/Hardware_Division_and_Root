@@ -37,7 +37,7 @@ reg			[19:0]	current_base;
 //reg			[139:0]	pow_result_shift;// = pow_result >> (in_data_2-1)*10;
 //reg			[139:0] exponent_result;
 
-
+wire		[19:0]	extended_in = {in_data_1, {10'b0}}
 /*
  *	Compute Exponent
  *
@@ -135,9 +135,9 @@ always @(posedge clk) begin
 		guess_result <= 'd0;		
 	end
 	else if (current_state==ST_COMPARE && in_data_2=='d1) begin//pow 1
-		guess_result <= in_data_1;
+		guess_result <= extended_in;
 	end
-	else if (current_state==ST_COMPARE && (pow_result<in_data_1 || pow_result==in_data_1) ) begin
+	else if (current_state==ST_COMPARE && (pow_result<extended_in || pow_result==extended_in) ) begin
 		guess_result <= guess_result | current_base;
 	end
 	else if (current_state == ST_INIT) begin
@@ -162,7 +162,7 @@ always @(posedge clk) begin
 	if (!rst_n) begin
 		terminate_flag <= 1'b0;
 	end
-	else if (current_state==ST_COMPARE && (current_base=='d0 || pow_result==in_data_1 || in_data_2=='d1) ) begin 
+	else if (current_state==ST_COMPARE && (current_base=='d0 || pow_result==extended_in || in_data_2=='d1) ) begin 
 	// all iteration done OR exact match OR raised to POW 1 (no computation needed)
 		terminate_flag <= 1'b1;
 	end
