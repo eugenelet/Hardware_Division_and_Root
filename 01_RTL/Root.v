@@ -98,9 +98,9 @@ always @(posedge clk) begin
 	end
 end
 
-//reg		[19:0]	current_guess;
+reg		[19:0]	current_guess;
 reg		[19:0]	guess_result;
-wire	[19:0]	current_guess = guess_result | current_base;
+//wire	[19:0]	current_guess = guess_result | current_base;
 reg		[19:0]	pow_result;
 wire 	[39:0] 	extended_pow = pow_result * (current_guess);//Q10.10 * Q10.10
 always @(posedge clk) begin
@@ -154,17 +154,17 @@ always @(posedge clk) begin
 end
 
 
-//always @(posedge clk) begin
-//	if (!rst_n) begin
-//		current_guess <= 'd0;
-//	end
-//	else if (current_state == ST_COMPARE) begin
-//		current_guess <= guess_result | current_base;
-//	end
-//	else if (current_state == ST_INIT) begin
-//		current_guess <= 'd0;
-//	end
-//end
+always @(posedge clk) begin
+	if (!rst_n) begin
+		current_guess <= 'd0;
+	end
+	else if (current_state == ST_COMPARE) begin
+		current_guess <= guess_result | current_base;
+	end
+	else if (current_state == ST_INIT) begin
+		current_guess <= 'd0;
+	end
+end
 
 
 always @(posedge clk) begin
