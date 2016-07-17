@@ -119,7 +119,7 @@ always @(posedge clk) begin
 	if (!rst_n) begin
 		compute_done <= 1'b0;		
 	end
-	else if (current_state==ST_POW && pow_count == in_data_2) begin
+	else if (current_state==ST_POW && (pow_count + 1) == in_data_2) begin
 		compute_done <= 1'b1;
 	end
 	else begin
