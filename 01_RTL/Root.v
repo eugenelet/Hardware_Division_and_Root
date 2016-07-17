@@ -140,7 +140,7 @@ always @(posedge clk) begin
 	end
 	//Shifting of Base
 	else if (current_state == ST_COMPARE) begin
-		current_base <= current_base >> 1'b1;
+		current_base <= current_base >> 1;
 	end
 	else if (current_state == ST_OUTPUT) begin
 		current_base <= 'hfffff;//to prevent optimization
