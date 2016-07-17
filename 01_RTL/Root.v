@@ -8,7 +8,7 @@ module Root(
     out_data
 );
 
-parameter	ST_INIT		= 'd0;
+parameter	ST_IDLE		= 'd0;
 parameter	ST_COMPARE	= 'd1;
 parameter	ST_POW		= 'd2;
 parameter	ST_OUTPUT 	= 'd3;
@@ -27,58 +27,9 @@ output reg	[19:0]	out_data;
 reg			[1:0]	current_state;
 reg			[1:0]	next_state;
 
-
-/*
- *	Compute Root
- *
- */
 reg			[19:0]	current_base;
-//reg			[139:0]	guess_result;// = ((out_data | current_base) ** in_data_2);// << (5-in_data_2)*10;
-//reg			[139:0]	pow_result_shift;// = pow_result >> (in_data_2-1)*10;
-//reg			[139:0] exponent_result;
+wire		[19:0]	extended_in = {in_data_1, {10'b0}};//for comparing purpose
 
-wire		[19:0]	extended_in = {in_data_1, {10'b0}};
-/*
- *	Compute Exponent
- *
- */
-//always @(*) begin
-//	case(in_data_2)
-//	'd0: begin
-//		exponent_result = 'd1;
-//	end
-//	'd1: begin
-//		exponent_result = (out_data|current_base);
-//	end
-//	'd2: begin
-//		exponent_result = (out_data|current_base) * (out_data|current_base);
-//	end
-//	'd3: begin
-//		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base);
-//	end
-//	'd4: begin
-//		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * (out_data|current_base);
-//	end
-//	'd5: begin
-//		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * 
-//							(out_data|current_base);
-//	end
-//	'd6: begin
-//		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * 
-//							(out_data|current_base) * (out_data|current_base);
-//	end
-//	'd7: begin
-//		exponent_result = (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * (out_data|current_base) * 
-//							(out_data|current_base) * (out_data|current_base) * (out_data|current_base);
-//	end
-//	default: exponent_result = 'd0;
-//	endcase
-//end
-//
-//always @(*) begin
-//	guess_result = exponent_result << ((7-in_data_2)*20);
-//	pow_result_shift = pow_result >> (in_data_2-1)*10;//use mux manually
-//end
 
 /*
  *	Compute Power
@@ -100,7 +51,6 @@ end
 
 reg		[19:0]	current_guess;
 reg		[19:0]	guess_result;
-//wire	[19:0]	current_guess = guess_result | current_base;
 reg		[19:0]	pow_result;
 wire 	[39:0] 	extended_pow = pow_result * (current_guess);//Q10.10 * Q10.10
 always @(posedge clk) begin
@@ -113,6 +63,8 @@ always @(posedge clk) begin
 	else if (current_state==ST_POW && pow_count<(in_data_2-1)) begin
 		pow_result <= extended_pow >> 'd10;
 	end
+
+	//Initialize before compute
 	else if (current_state==ST_COMPARE && pow_result<extended_in) begin
 		pow_result <= current_guess | current_base;
 	end
@@ -121,12 +73,14 @@ always @(posedge clk) begin
 	end
 end
 
+//Terminate ST_POW
 reg			  compute_done;
 always @(posedge clk) begin
 	if (!rst_n) begin
 		compute_done <= 1'b0;		
 	end
 	else if (current_state==ST_POW && ((pow_count + 1)==in_data_2 || extended_pow>{ {10'b0}, extended_in, {10'b0} }) ) begin
+	//Saves a cycle by ending right at the last POW
 		compute_done <= 1'b1;
 	end
 	else begin
@@ -134,8 +88,6 @@ always @(posedge clk) begin
 	end
 end
 
-
-//wire		[19:0]	shift_pow_result = pow_result >> 5;//only 5 bits will be fixed bits
 
 /*
  *	Compare Result of Power Computation
@@ -145,13 +97,19 @@ always @(posedge clk) begin
 	if (!rst_n) begin
 		guess_result <= 'd0;		
 	end
-	else if (current_state==ST_COMPARE && in_data_2=='d1) begin//pow 1
+
+	//Terminate Early if no POW needed
+	else if (current_state==ST_COMPARE && in_data_2=='d1) begin
 		guess_result <= extended_in;
 	end
+
+	//Update guess_result (correct guess!)
 	else if (current_state==ST_COMPARE && (pow_result<extended_in || pow_result==extended_in) ) begin
 		guess_result <= current_guess;
 	end
-	else if (current_state == ST_INIT) begin
+
+	//IDLE
+	else if (current_state == ST_IDLE) begin
 		guess_result <= 'd0;
 	end
 end
@@ -161,13 +119,16 @@ always @(posedge clk) begin
 	if (!rst_n) begin
 		current_guess <= 'd0;
 	end
+	//Update current_guess based on previous guess
 	else if (current_state==ST_COMPARE && pow_result<extended_in) begin
 		current_guess <= current_guess | current_base;
 	end
+	//Update current guess based on previous CORRECT guess
 	else if (current_state==ST_COMPARE) begin
 		current_guess <= guess_result | current_base;
 	end
-	else if (current_state == ST_INIT) begin
+	//IDLE
+	else if (current_state == ST_IDLE) begin
 		current_guess <= 'd0;
 	end
 end
@@ -177,14 +138,17 @@ always @(posedge clk) begin
 	if (!rst_n) begin
 		current_base <= BASE;
 	end
+	//Shifting of Base
 	else if (current_state == ST_COMPARE) begin
 		current_base <= current_base >> 1'b1;
 	end
-	else if (current_state == ST_INIT) begin
+	//IDLE
+	else if (current_state == ST_IDLE) begin
 		current_base <= BASE;
 	end
 end
 
+//Terminate ST_COMPARE -> ST_OUTPUT
 reg					terminate_flag;
 always @(posedge clk) begin
 	if (!rst_n) begin
@@ -194,7 +158,7 @@ always @(posedge clk) begin
 	// all iteration done OR exact match OR raised to POW 1 (no computation needed)
 		terminate_flag <= 1'b1;
 	end
-	else if (current_state == ST_INIT) begin
+	else begin
 		terminate_flag <= 1'b0;
 	end
 end
@@ -237,7 +201,7 @@ end
 
 always @(posedge clk) begin
 	if (!rst_n) begin
-		current_state <= ST_INIT;
+		current_state <= ST_IDLE;
 	end
 	else begin
 		current_state <= next_state;
@@ -250,12 +214,12 @@ always @(*) begin
 	end
 	else begin
 		case(current_state)
-			ST_INIT: begin
+			ST_IDLE: begin
 				if(in_valid) begin
 					next_state = ST_COMPARE;
 				end
 				else begin
-					next_state = ST_INIT;
+					next_state = ST_IDLE;
 				end
 			end
 			ST_COMPARE: begin
@@ -276,7 +240,7 @@ always @(*) begin
 			end
 			ST_OUTPUT: begin
 				if (out_valid) begin
-					next_state = ST_INIT;
+					next_state = ST_IDLE;
 				end
 				else begin
 					next_state = ST_OUTPUT;
