@@ -105,6 +105,9 @@ always @(posedge clk) begin
 	else if (current_state==ST_POW && pow_count<in_data_2) begin
 		pow_result <= ( pow_result * (guess_result|current_base) ) >> 10;
 	end
+	else begin
+		pow_result <= guess_result | current_base;
+	end
 end
 
 reg			  compute_done;
