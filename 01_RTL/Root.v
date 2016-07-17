@@ -101,13 +101,13 @@ end
 
 reg		[19:0]	guess_result;
 reg		[19:0]	pow_result;
-wire 	[39:0] 	extended_pow = pow_result * (guess_result|current_base);
+wire 	[39:0] 	extended_pow = pow_result * (guess_result|current_base);//Q10.10 * Q10.10
 always @(posedge clk) begin
 	if (!rst_n) begin
 		pow_result <= guess_result | current_base;		
 	end
 	else if (current_state==ST_POW && pow_count<in_data_2) begin
-		pow_result <= extended_pow >> 10;
+		pow_result <= extended_pow >> 'd10;
 	end
 	else begin
 		pow_result <= guess_result | current_base;
