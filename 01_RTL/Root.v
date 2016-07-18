@@ -13,7 +13,7 @@ parameter	ST_COMPARE	= 'd1;
 parameter	ST_POW		= 'd2;
 parameter	ST_OUTPUT 	= 'd3;
 
-//lol
+
 parameter	BASE = 20'b0000_0000_0000_0000_0000;//20'h04000; //15th bit
 
 input				clk;
