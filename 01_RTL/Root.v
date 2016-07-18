@@ -14,7 +14,7 @@ parameter	ST_POW		= 'd2;
 parameter	ST_OUTPUT 	= 'd3;
 
 
-parameter	BASE = 20'b0000_0000_0000_0000_0000;//20'h04000; //15th bit
+parameter	BASE = 20'h04000; //15th bit
 
 input				clk;
 input				rst_n;
@@ -255,3 +255,5 @@ always @(*) begin
 end
 
 endmodule
+
+//terminate flag missing after SYN
