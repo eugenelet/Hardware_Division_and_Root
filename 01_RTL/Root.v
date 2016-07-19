@@ -55,7 +55,7 @@ reg		[19:0]	pow_result;
 wire 	[39:0] 	extended_pow = pow_result * (current_guess);//Q10.10 * Q10.10
 always @(posedge clk) begin
 	if (!rst_n) begin
-		pow_result <= current_guess;		
+		pow_result <= 'd0;	//don't put an unknown at reset	
 	end
 	else if (current_state==ST_POW && extended_pow>{ {10'b0}, extended_in, {10'b0} } && pow_count<(in_data_2-1)) begin
 		pow_result <= 20'hfffff;
@@ -248,6 +248,7 @@ always @(*) begin
 					next_state = ST_OUTPUT;
 				end
 			end
+			default: next_state = ST_IDLE;
 		endcase	
 	end
 	
