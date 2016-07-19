@@ -9,7 +9,7 @@ module Root(
 );
 
 parameter	ST_IDLE		= 'd0;
-parameter	ST_COMPARE	= 'd1;
+parameter	ST_COMPARE	= 'd1;//use comma only
 parameter	ST_POW		= 'd2;
 parameter	ST_OUTPUT 	= 'd3;
 
@@ -36,7 +36,7 @@ wire		[19:0]	extended_in = {in_data_1, {10'b0}};//for comparing purpose
  *
  */
 
-reg		[2:0]	pow_count;
+reg		[2:0]	pow_count;//dont use begin and end if only one line
 always @(posedge clk) begin
 	if (!rst_n) begin
 		pow_count <= 'd0;		
@@ -63,7 +63,6 @@ always @(posedge clk) begin
 	else if (current_state==ST_POW && pow_count<(in_data_2-1)) begin
 		pow_result <= extended_pow >> 'd10;
 	end
-
 	//Initialize before compute
 	else if (current_state==ST_COMPARE && pow_result<extended_in) begin
 		pow_result <= current_guess | current_base;
@@ -136,18 +135,18 @@ end
 
 always @(posedge clk) begin
 	if (!rst_n) begin
-		current_base <= BASE;
+		current_base <= 'h04000;
 	end
 	//Shifting of Base
 	else if (current_state == ST_COMPARE) begin
 		current_base <= current_base >> 1;
 	end
 	else if (current_state == ST_OUTPUT) begin
-		current_base <= 'hfffff;//to prevent optimization
+		current_base <= 'hFFFFF;//to prevent optimization
 	end
 	//IDLE
 	else if (current_state == ST_IDLE) begin
-		current_base <= BASE;
+		current_base <= 'h04000;
 	end
 end
 
