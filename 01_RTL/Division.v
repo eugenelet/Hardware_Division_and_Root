@@ -50,7 +50,7 @@ end
  *	Compute Division
  *
  */
-reg			[20:0]	current_base;
+reg			[19:0]	current_base;
 
 always @(posedge clk) begin
 	if (!rst_n) begin
